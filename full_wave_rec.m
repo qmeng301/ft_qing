@@ -57,13 +57,23 @@ figure(4)
 % loglog(f_axis(1:length(f_axis)/2+1),abs(f_env_7hz(1:length(f_env_7hz)/2+1)));
 loglog(f_axis(1:length(f_axis)/2+1),abs(f_env_8hz(1:length(f_env_8hz)/2+1)));
 
-total = [zeros(0.2*fs,1);env_4hz;zeros(0.1*fs,1);zeros(0.2*fs,1);env_5hz;zeros(0.1*fs,1);...
-    zeros(0.2*fs,1);env_6hz;zeros(0.1*fs,1);zeros(0.2*fs,1);env_7hz;zeros(0.1*fs,1);...
-    zeros(0.2*fs,1);env_8hz;zeros(0.1*fs,1)];
+%total = [zeros(0.2*fs,1);env_4hz;zeros(0.1*fs,1);zeros(0.2*fs,1);env_5hz;zeros(0.1*fs,1);...
+    %zeros(0.2*fs,1);env_6hz;zeros(0.1*fs,1);zeros(0.2*fs,1);env_7hz;zeros(0.1*fs,1);...
+    %zeros(0.2*fs,1);env_8hz;zeros(0.1*fs,1)];
 
-save env_4-8hz.mat total;
-% save env_5hz.mat env_5hz;
-% save env_6hz.mat env_6hz;
-% save env_7hz.mat env_7hz;
-% save env_8hz.mat env_8hz;
+%total_resam = resample(total,2048,44100);
+%save env_4-8hz.mat total_resam;
+
+
+env_4hz_resam = resample([zeros(0.2*fs,1);env_4hz;zeros(0.1*fs,1)],2048,44100);
+env_5hz_resam = resample([zeros(0.2*fs,1);env_5hz;zeros(0.1*fs,1)],2048,44100);
+env_6hz_resam = resample([zeros(0.2*fs,1);env_6hz;zeros(0.1*fs,1)],2048,44100);
+env_7hz_resam = resample([zeros(0.2*fs,1);env_7hz;zeros(0.1*fs,1)],2048,44100);
+env_8hz_resam = resample([zeros(0.2*fs,1);env_8hz;zeros(0.1*fs,1)],2048,44100);
+
+%save env_4hz.mat env_4hz_resam;
+%save env_5hz.mat env_5hz_resam;
+%save env_6hz.mat env_6hz_resam;
+%save env_7hz.mat env_7hz_resam;
+%save env_8hz.mat env_8hz_resam;
 
