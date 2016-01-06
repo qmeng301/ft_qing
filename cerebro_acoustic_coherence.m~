@@ -14,14 +14,14 @@ cfg.trialfun              = 'ft_trialfun_general';
 cfg.trialdef.eventtype    = 'STATUS';
 %cfg.trialdef.eventvalue   = [144 145 146 147 148]; % stimulus triggers
 %cfg.trialdef.eventvalue   = 144;
-cfg.trialdef.eventvalue   = 145;
+%cfg.trialdef.eventvalue   = 145;
 %cfg.trialdef.eventvalue   = 146;
 %cfg.trialdef.eventvalue   = 147;
-%cfg.trialdef.eventvalue   = 148;
+cfg.trialdef.eventvalue   = 148;
 
-cfg.trialdef.prestim      = 0.2; % latency in seconds
-cfg.trialdef.poststim     = 2.6; % latency in seconds
-%    
+cfg.trialdef.prestim      = 0; % latency in seconds
+cfg.trialdef.poststim     = 2.5; % latency in seconds
+%
 cfg = ft_definetrial(cfg);
 trl = cfg.trl;
 %ft_databrowser(cfg);
@@ -29,6 +29,19 @@ cfg=[];
 cfg.dataset = fullfile(directory,file_name);
 cfg.trl = trl;
 epoch_data = ft_preprocessing(cfg);
+
+%load env_4hz.mat
+%load env_5hz.mat
+%load env_6hz.mat
+%load env_7hz.mat
+load env_8hz.mat
+
+%tmp_envelope = env_4hz_resam;
+%tmp_envelope = env_5hz_resam;
+%tmp_envelope = env_6hz_resam;
+%tmp_envelope = env_7hz_resam;
+tmp_envelope = env_8hz_resam;
+
 
 %% filter and rereference EEG data
 cfg = [];
@@ -55,18 +68,16 @@ cfg.trl          = epoch_data.cfg.trl;
 cfg.channel      = 'EXG8';
 exg8 = ft_preprocessing(cfg);
 %load env_4hz.mat
-load env_5hz.mat
+%load env_5hz.mat
 %load env_6hz.mat
 %load env_7hz.mat
 %load env_8hz.mat
 
-%tmp_envelope = env_4hz_resam(1:end-1);
-tmp_envelope = env_5hz_resam(1:end-1);
-%tmp_envelope = env_6hz_resam(1:end-1);
-%tmp_envelope = env_7hz_resam(1:end-1);
-%tmp_envelope = env_8hz_resam(1:end-1);
-
-%exg8.trial = mat2cell(tmp_envelope',1,5734);
+%tmp_envelope = env_4hz_resam;
+%tmp_envelope = env_5hz_resam;
+%tmp_envelope = env_6hz_resam;
+%tmp_envelope = env_7hz_resam;
+%tmp_envelope = env_8hz_resam;
 
 exg8.trial = {tmp_envelope'};
 
@@ -87,13 +98,12 @@ cfg.viewmode = 'vertical';
 ft_databrowser(cfg,pre_envelope_data);
 
 %% 
-%data = ft_appenddata([], pre_eeg_data, pre_envelope_data);
-
 data = ft_appenddata([], pre_eeg_data, pre_envelope_data);
+%data = ft_appenddata([], epoch_data, exg8);
 
 figure
 subplot(2,1,1);
-plot(data.time{1},data.trial{1}(14,:));
+plot(data.time{1},data.trial{1}(20,:));
 axis tight;
 legend(data.label(20));
 
@@ -107,9 +117,9 @@ cfg = [];
 cfg.layout   = 'biosemi64.lay';
 %ft_layoutplot(cfg);
 layout = ft_prepare_layout(cfg);
-%data.label(1:64)= layout.label(1:64,1);
-data.label(1:64)= {'EEG'};
-data.label{65} = 'evnelope';
+data.label(1:64)= layout.label(1:64,1);
+%data.label(1:64)= {'EEG'};
+data.label{65} = 'envelope';
 %% frequency and connectivity analysis
 % cfg            = [];
 % cfg.output     = 'fourier';
@@ -136,6 +146,7 @@ freq           = ft_freqanalysis(cfg, data);
 cfg            = [];
 cfg.method     = 'coh';
 %cfg.channelcmb = {[1:64] 65};
+cfg.channelcmb = {'EEG' 'envelope'};
 fd             = ft_connectivityanalysis(cfg, freq);
 %fdfourier      = ft_connectivityanalysis(cfg, freqfourier);
 %%
@@ -146,4 +157,5 @@ cfg.xlim             = [1 20];
 cfg.refchannel       = 65;
 cfg.layout           = layout;
 cfg.showlabels       = 'yes';
-figure; ft_multiplotER(cfg, fd)
+figure; 
+ft_multiplotER(cfg, fd);
