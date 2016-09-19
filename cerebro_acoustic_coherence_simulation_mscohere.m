@@ -5,7 +5,7 @@ clc
 addpath ./fieldtrip-20151119;
 %% define trials and read in raw EEG data
 directory = './raw_recording/am_noise';
-file_name = '0005_XL_AM_sine_repeated.bdf';
+file_name = '0004_XL_AM_sine_01.bdf';
 
 % create the trial definition
 cfg = [];
@@ -30,7 +30,13 @@ cfg.dataset = fullfile(directory,file_name);
 cfg.trl = trl;
 cfg.channel    = 'all';
 epoch_data = ft_preprocessing(cfg);
-
+%%
+cfg = []; 
+cfg.layout   = 'biosemi64.lay';
+%ft_layoutplot(cfg);
+layout = ft_prepare_layout(cfg);
+epoch_data.label(1:64)= layout.label(1:64,1);
+epoch_data.label{72} = 'envelope';
 %% filter and rereference EEG data
 cfg = [];
 cfg.lpfilter        = 'yes';
@@ -41,9 +47,8 @@ cfg.hpfreq          = 1.5;
 cfg.reref         = 'yes';
 cfg.refchannel    = {'EXG1','EXG2'};
 cfg.channel    = 'all';
-
+cfg.trials  = 1;
 pre_eeg_data = ft_preprocessing(cfg,epoch_data);
-%data_type = ft_senstype(pre_data);
 cfg = [];
 cfg.viewmode = 'vertical';
 cfg.blocksize = 2.5;
@@ -51,43 +56,40 @@ ft_databrowser(cfg,pre_eeg_data);
 
 %% read in an external channle for envelope information
 
-load env_4hz.mat;
+%load env_4hz.mat;
 %load env_5hz.mat;
 %load env_6hz.mat;
 %load env_7hz.mat;
-%load env_8hz.mat;
+load env_8hz.mat;
 
-envelope.env4hz = env_4hz_resam;
+%env_4hz_resam = resample(env_4hz,2048,44100);
+%env_5hz_resam = resample(env_5hz,2048,44100);
+%env_6hz_resam = resample(env_6hz,2048,44100);
+%env_7hz_resam = resample(env_7hz,2048,44100);
+env_8hz_resam = resample(env_8hz,2048,44100);
+
+%envelope.env4hz = env_4hz_resam;
 %envelope.env5hz = env_5hz_resam;
 %envelope.env6hz = env_6hz_resam;
 %envelope.env7hz = env_7hz_resam;
-%envelope.env8hz = env_8hz_resam;
+envelope.env8hz = env_8hz_resam;
 
-for i = 1:20
- pre_eeg_data.trial{i}(72,:) = 50 * envelope.env4hz;
-% pre_eeg_data.trial{i}(72,:) = 50 * envelope.env5hz;
-% pre_eeg_data.trial{i}(72,:) = 50 * envelope.env6hz;
-% pre_eeg_data.trial{i}(72,:) = 50 * envelope.env7hz;
-% pre_eeg_data.trial{i}(72,:) = 50 * envelope.env8hz;
-
-end
+% pre_eeg_data.trial{1}(72,:) = 50 * envelope.env4hz;
+% pre_eeg_data.trial{1}(72,:) = 50 * envelope.env5hz;
+% pre_eeg_data.trial{1}(72,:) = 50 * envelope.env6hz;
+% pre_eeg_data.trial{1}(72,:) = 50 * envelope.env7hz;
+ pre_eeg_data.trial{1}(72,:) = 50 * envelope.env8hz;
 
 cfg = [];
 cfg.viewmode = 'vertical';
 cfg.blocksize = 2.5;
-cfg.ylim = [-0.05 0.25];
-%ft_databrowser(cfg,exg8);
+
 ft_databrowser(cfg,pre_eeg_data);
 
 %% 
 data = pre_eeg_data;
 
-for i = 1:20
-    
- data.trial{i}(15,:) = data.trial{i}(15,:) + data.trial{i}(72,:);
-
-end
-
+data.trial{1}(15,:) =  data.trial{1}(15,:) + data.trial{1}(72,:);
 
 figure
     
@@ -166,9 +168,13 @@ xlabel('Frequency (Hz)')
 grid
 
 
-[Cxy1,f1] = mscohere(data.trial{1}(15,:),data.trial{1}(72,:),[],[],[],data.fsample);
-[Cxy2,f2] = mscohere(data.trial{1}(52,:),data.trial{1}(72,:),[],[],[],data.fsample);
-[Cxy3,f3] = mscohere(data.trial{1}(72,:),data.trial{1}(72,:),[],[],[],data.fsample);
+[Cxy1,f1] = mscohere(data.trial{1}(15,:),data.trial{1}(72,:),hanning(2048),512,2048,data.fsample);
+[Cxy2,f2] = mscohere(data.trial{1}(52,:),data.trial{1}(72,:),hanning(2048),512,2048,data.fsample);
+[Cxy3,f3] = mscohere(data.trial{1}(72,:),data.trial{1}(72,:),hanning(2048),512,2048,data.fsample);
+
+% [Cxy1,f1] = mscohere(data.trial{1}(15,:),data.trial{1}(72,:),[],[],[],data.fsample);
+% [Cxy2,f2] = mscohere(data.trial{1}(52,:),data.trial{1}(72,:),[],[],[],data.fsample);
+% [Cxy3,f3] = mscohere(data.trial{1}(72,:),data.trial{1}(72,:),[],[],[],data.fsample);
 figure
 ax = gca;
 
@@ -190,21 +196,14 @@ legend(data.label(72));
 grid
 xlabel('Frequency (Hz)')
 
-
-%% load layout and modify label
-cfg = []; 
-cfg.layout   = 'biosemi64.lay';
-%ft_layoutplot(cfg);
-layout = ft_prepare_layout(cfg);
-data.label(1:64)= layout.label(1:64,1);
-data.label{72} = 'envelope';
 %% frequency analysis
 cfg            = [];
 cfg.method     = 'mtmfft';
 cfg.output     = 'powandcsd';
-cfg.foilim     = [0 500];
+cfg.foilim     = [0 200];
 cfg.taper      = 'hanning';
-cfg.keeptrials = 'yes';
+
+%cfg.keeptrials = 'yes';
 cfg.channel    = {'eeg' 'envelope'};
 cfg.channelcmb = {'eeg' 'envelope'};
 freq           = ft_freqanalysis(cfg, data);
@@ -214,7 +213,7 @@ cfg            = [];
 cfg.method     = 'coh';
 cfg.channelcmb = {'eeg' 'envelope'};
 fd             = ft_connectivityanalysis(cfg, freq);
-%% multi plot
+
 cfg                  = [];
 cfg.parameter        = 'cohspctrm';
 cfg.xlim             = [1 30];

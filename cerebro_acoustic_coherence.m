@@ -1,11 +1,13 @@
+% this is the original script (archived)
+
 close all
 clear 
 clc
 
-addpath ./fieldtrip-20151119;
+addpath (genpath('./fieldtrip-20160515'));
 %% define trials and read in raw EEG data
-directory = './raw_recording/am_noise';
-file_name = '0004_XL_AM_sine_01.bdf';
+directory = './raw_recording/am_noise/EEG/';
+file_name = '0005_XL_AM_sine_repeated_01.bdf';
     
 % create the trial definition
 cfg = [];
@@ -47,7 +49,7 @@ pre_eeg_data = ft_preprocessing(cfg,epoch_data);
 %data_type = ft_senstype(pre_data);
 cfg = [];
 cfg.viewmode = 'vertical';
-cfg.blocksize = 2.5;
+%cfg.blocksize = 2.5;
 ft_databrowser(cfg,pre_eeg_data);
 
 %% read in an external channle for envelope information
@@ -111,6 +113,11 @@ cfg.layout   = 'biosemi64.lay';
 %ft_layoutplot(cfg);
 layout = ft_prepare_layout(cfg);
 data.label(1:64)= layout.label(1:64,1);
+
+cfg = [];
+cfg.grad = epoch_data.grad;
+layout = ft_prepare_layout(cfg, epoch_data);
+
 %data.label(1:64)= {'EEG'};
 data.label{65} = 'envelope';
 %% frequency and connectivity analysis
@@ -122,8 +129,6 @@ data.label{65} = 'envelope';
 % cfg.keeptrials = 'yes';
 % cfg.channel    = (1:65);
 % freqfourier    = ft_freqanalysis(cfg, data);
-
-
 
 cfg            = [];
 cfg.output     = 'powandcsd';
